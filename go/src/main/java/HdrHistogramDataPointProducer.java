@@ -16,7 +16,7 @@ public class HdrHistogramDataPointProducer extends  DataPointProducer{
         for(int i=0; i<itterations; i++){
 
             long start = System.nanoTime();
-            opperation(i);
+            opperation();
             histogram.recordValue(System.nanoTime() - start);
 
         }

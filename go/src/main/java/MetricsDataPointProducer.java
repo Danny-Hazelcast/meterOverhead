@@ -24,22 +24,11 @@ public class MetricsDataPointProducer extends  DataPointProducer{
 
             Timer.Context context =  timer.time();
 
-                opperation(i);
+                opperation();
 
             context.stop();
         }
         durationNs = System.nanoTime() - startNs;
-
-
-        //FOR ALL THREADS USING THIS METRIC RESISTERY
-        long totalMetricTime = 0;
-        for(long v : timer.getSnapshot().getValues()){
-            totalMetricTime += v;
-        }
-        System.out.println("total="+totalMetricTime);
-        //System.out.println("d    ="+(durationNs - totalOperationNanos));
-
-        //totalOperationNanos = TimeUnit.MILLISECONDS.toNanos(totalOperationNanos);
 
         return null;
     }

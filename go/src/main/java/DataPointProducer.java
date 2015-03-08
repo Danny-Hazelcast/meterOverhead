@@ -25,7 +25,7 @@ public abstract class DataPointProducer implements Callable<Object> {
         long startNs = System.nanoTime();
         for(int i=0; i<itterations; i++){
 
-            opperation(i);
+            opperation();
 
             dataPoint.nanoTime=oppTimeNanos;
             dataPoint.nanoElapsed=elapsedNs;
@@ -37,11 +37,13 @@ public abstract class DataPointProducer implements Callable<Object> {
         return null;
     }
 
-    public void opperation(int i){
+    public void opperation() throws Exception{
         oppTimeNanos = System.nanoTime();
 
             //Thread.sleep(1);
-            x = i % 13;
+            for(int i=0; i<50000; i++){
+                x = i % 13;
+            }
 
         elapsedNs = System.nanoTime() - oppTimeNanos;
         totalOperationNanos +=elapsedNs;
@@ -51,30 +53,32 @@ public abstract class DataPointProducer implements Callable<Object> {
     abstract void handelDataPoint(DataPoint dataPoint);
 
     public void printStats(){
+
+        long overhead = durationNs - totalOperationNanos;
+
+        long durationMills = TimeUnit.MILLISECONDS.convert(durationNs, TimeUnit.NANOSECONDS);
+
+        double avgOps =  (double)durationMills / (double)totalCount;
         System.out.println("duration          nanos = "+durationNs);
         System.out.println("totalOperation    nanos = "+ totalOperationNanos);
-        System.out.println("overhead          nanos = "+(durationNs- totalOperationNanos));
+        System.out.println("overhead          nanos = "+ overhead);
         System.out.println("count                   = "+totalCount);
-        System.out.println("duration          mills = "+  TimeUnit.MILLISECONDS.convert(durationNs, TimeUnit.NANOSECONDS) );
+        System.out.println("Avg Operation     mills = "+avgOps);
+        System.out.println("duration          mills = "+durationMills);
         System.out.println("totalOperation    mills = "+  TimeUnit.MILLISECONDS.convert(totalOperationNanos, TimeUnit.NANOSECONDS) );
-        System.out.println("overhead          mills = "+  TimeUnit.MILLISECONDS.convert(durationNs- totalOperationNanos, TimeUnit.NANOSECONDS) );
+        System.out.println("overhead          mills = "+  TimeUnit.MILLISECONDS.convert(overhead, TimeUnit.NANOSECONDS) );
+        printOverHead();
 
         System.out.println();
     }
 
-    public int getItterations() {
-        return itterations;
-    }
+    public void printOverHead(){
 
-    public long getTotalOperationNanos() {
-        return totalOperationNanos;
-    }
-
-    public long getDurationNs() {
-        return durationNs;
-    }
-
-    public long getTotalCount() {
-        return totalCount;
+        long overhead = durationNs - totalOperationNanos;
+        double overHeadPercent  = ( (double)overhead/(double)durationNs ) * 100.0d;
+        double operationPercent = ( (double)totalOperationNanos/(double)durationNs ) * 100.0d;
+        System.out.println("overhead              % = "+overHeadPercent);
+        System.out.println("operation             % = "+operationPercent);
+        System.out.println("total                 % = "+(overHeadPercent + operationPercent));
     }
 }

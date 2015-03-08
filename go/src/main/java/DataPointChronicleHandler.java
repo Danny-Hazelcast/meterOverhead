@@ -6,14 +6,13 @@ import net.openhft.chronicle.tools.ChronicleTools;
 
 import java.io.IOException;
 
-
-public class DataPointEventHandler implements EventHandler<DataPoint>
+public class DataPointChronicleHandler implements EventHandler<DataPoint>
 {
-    public static String baseDir = "/Users/danny/fastOut/disrupt";
+    public static String baseDir = "/Users/danny/fastOut/disruptChronicle";
     Chronicle chronicle;
     ExcerptAppender appender;
 
-    public DataPointEventHandler() throws IOException {
+    public DataPointChronicleHandler() throws IOException {
         ChronicleTools.deleteDirOnExit(baseDir);
         chronicle = ChronicleQueueBuilder.vanilla(baseDir).build();
         chronicle.clear();
