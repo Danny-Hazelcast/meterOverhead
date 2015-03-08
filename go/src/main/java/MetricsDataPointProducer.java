@@ -1,9 +1,6 @@
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.TimeUnit;
-
 public class MetricsDataPointProducer extends  DataPointProducer{
 
     private MetricRegistry metrics;
@@ -20,21 +17,16 @@ public class MetricsDataPointProducer extends  DataPointProducer{
     }
 
     public Object call() throws Exception {
-        totalElapsedNS=0;
+        totalOperationNanos =0;
         totalCount=0;
         long startNs = System.nanoTime();
         for(int i=0; i<itterations; i++){
 
-            long oppTimeNanos = System.nanoTime();
+            Timer.Context context =  timer.time();
 
-                Timer.Context context =  timer.time();
-                    //Thread.sleep(1);
-                    x = i % 13;
-                    totalCount++;
-                context.stop();
+                opperation(i);
 
-            long elapsedNs = System.nanoTime() - oppTimeNanos;
-            totalElapsedNS+=elapsedNs;
+            context.stop();
         }
         durationNs = System.nanoTime() - startNs;
 
@@ -45,9 +37,9 @@ public class MetricsDataPointProducer extends  DataPointProducer{
             totalMetricTime += v;
         }
         System.out.println("total="+totalMetricTime);
-        //System.out.println("d    ="+(durationNs - totalElapsedNS));
+        //System.out.println("d    ="+(durationNs - totalOperationNanos));
 
-        //totalElapsedNS = TimeUnit.MILLISECONDS.toNanos(totalElapsedNS);
+        //totalOperationNanos = TimeUnit.MILLISECONDS.toNanos(totalOperationNanos);
 
         return null;
     }

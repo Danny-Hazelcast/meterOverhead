@@ -10,7 +10,7 @@ import java.util.concurrent.*;
 
 public class Test {
     public int itterations=1000000;
-    public int producerThreads=1;
+    public int producerThreads=4;
 
     CompletionService<Object> completionService = new ExecutorCompletionService(Executors.newFixedThreadPool(producerThreads));
 
@@ -19,6 +19,8 @@ public class Test {
     Set<Callable> chronicleDataPointLoggerSet = new HashSet();
     Set<Callable> disruptorDataPointProducerSet = new HashSet();
     Set<Callable> metricsDataPointProducerSet = new HashSet();
+    Set<Callable> hdrHistogramDataPointProducerSet = new HashSet();
+
 
     public Test() throws Exception{
         init_testDisruptedChronicleLogging();
@@ -26,8 +28,8 @@ public class Test {
         for(int i =0; i<producerThreads; i++){
             chronicleDataPointLoggerSet.add(new ChronicleDataPointLogger(itterations));
             disruptorDataPointProducerSet.add( new DisruptorDataPointProducer(itterations, disruptor.getRingBuffer()) );
-
             metricsDataPointProducerSet.add( new MetricsDataPointProducer(itterations) );
+            hdrHistogramDataPointProducerSet.add(new HdrHistogramDataPointProducer(itterations));
         }
 
     }
@@ -42,6 +44,7 @@ public class Test {
         disruptor.start();
     }
 
+
     public void runCallables(Set<Callable> callables) throws Exception{
         for(Callable c : callables){
             completionService.submit(c);
@@ -55,35 +58,6 @@ public class Test {
     }
 
 
-    public void runCallables2(Set<Callable> callables) throws Exception{
-
-        for(Callable c : callables){
-            ((MetricsDataPointProducer)c).setMetricRegistry(new MetricRegistry());
-        }
-
-
-        for(Callable c : callables){
-            completionService.submit(c);
-        }
-        for(int i=0; i<callables.size(); i++){
-            completionService.take();
-        }
-
-        for(Callable c : callables){
-            ((DataPointProducer)c).printStats();
-        }
-
-        /*
-        long totalDurationNs =0;
-        long totalCount =0;
-        for(Callable c : callables){
-            totalDurationNs += ((MetricsDataPointProducer)c).getDurationNs();
-            totalCount += ((MetricsDataPointProducer)c).getTotalCount();
-        }
-        */
-    }
-
-
     public void testChronicleLogging()throws Exception{
         runCallables(chronicleDataPointLoggerSet);
     }
@@ -93,7 +67,14 @@ public class Test {
     }
 
     public void testMetricsDataPointProducer() throws Exception {
-        runCallables2(metricsDataPointProducerSet);
+        for(Callable c : metricsDataPointProducerSet){
+            ((MetricsDataPointProducer)c).setMetricRegistry(new MetricRegistry());
+        }
+        runCallables(metricsDataPointProducerSet);
+    }
+
+    public void testHdrHistogramDataPointProducer()throws Exception{
+        runCallables(hdrHistogramDataPointProducerSet);
     }
 
     public static void main(String[] args) throws Exception {
@@ -101,7 +82,7 @@ public class Test {
 
         for(int i=0; i<2; i++){
             System.out.println("===testChronicleLogging======================"+"run"+(i+1)+"======================");
-            t.testChronicleLogging();
+            //t.testChronicleLogging();
         }
         for(int i=0; i<2; i++){
             System.out.println("===testDisruptedChronicleLogging============="+"run"+(i+1)+"======================");
@@ -111,6 +92,11 @@ public class Test {
         for(int i=0; i<2; i++){
             System.out.println("===testMetricsDataPointProducer=============="+"run"+(i+1)+"======================");
             t.testMetricsDataPointProducer();
+        }
+
+        for(int i=0; i<2; i++){
+            System.out.println("===testHdrHistogramDataPointProducer=============="+"run"+(i+1)+"======================");
+            t.testHdrHistogramDataPointProducer();
         }
 
         /*
